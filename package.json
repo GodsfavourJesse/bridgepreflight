@@ -1,0 +1,32 @@
+{
+    "name": "bridgepreflight",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "bin": {
+        "bridgepreflight": "./dist/cli.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "ts-node src/cli.ts",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "dependencies": {
+        "@types/glob": "^8.1.0",
+        "chalk": "^5.6.2",
+        "commander": "^14.0.3",
+        "dotenv": "^17.2.4",
+        "execa": "^9.6.1",
+        "glob": "^13.0.2",
+        "ora": "^9.3.0",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3"
+    },
+    "devDependencies": {
+        "@types/node": "^25.2.3"
+    }
+}
