@@ -7,9 +7,8 @@ on:
         branches: [ main ]
 
 jobs:
-    preflight:
-        runs-on: ubuntu-latest
-
+  preflight:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
