@@ -25,4 +25,39 @@ jobs:
         run: npm run build
 
       - name: Run BridgePreflight Scan
-        run: node dist/cli.js scan --json
+        id: scan
+        run: node dist/cli.js scan --json > scan-results.json
+
+      - name: Comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with: 
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            script: |
+                const fs = require('fs');
+                const data = JSON.parse(fs.readFileSync('scan-results.json'));
+
+
+                const total = data.totalScore;
+                const readiness = data.readiness;
+
+
+                const topRisks = data.results
+                    .filter(r => r.severity !== 'healthy')
+                    .map(r => `• ${r.name} (${r.severity.toUpperCase()})`)
+                    .join('\n') || "None";
+
+                
+                github.rest.issues.createComment({
+                    issue_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    body: `## BridgePreflight Scan Report
+                    **Total Score:** ${total}/100
+                    **Readiniess:** ${readiness}
+
+                    ### ⚠ Top Risk Factors
+                    ${topRisks}
+                    `
+                });
+

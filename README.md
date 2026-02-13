@@ -1,1 +1,5 @@
-![BridgePreflight](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/bridgepreflight.yml/badge.svg)
+# BridgePreflight
+
+![BridgePreflight](https://github.com/GodsfavourJesse/bridgepreflight/actions/workflows/bridgepreflight.yml/badge.svg)
+
+AI-native productive safety scanner for Node/TypeScript projects.
