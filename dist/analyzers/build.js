@@ -15,6 +15,8 @@ class BuildAnalyzer {
     async run() {
         const projectRoot = process.cwd();
         const packageJsonPath = path_1.default.join(projectRoot, "package.json");
+        const tsconfigPath = path_1.default.join(projectRoot, "tsconfig.json");
+        // === Must have package.json ===
         if (!fs_1.default.existsSync(packageJsonPath)) {
             return {
                 name: this.name,
@@ -26,21 +28,37 @@ class BuildAnalyzer {
             };
         }
         const packageJson = JSON.parse(fs_1.default.readFileSync(packageJsonPath, "utf-8"));
-        if (!packageJson.scripts || !packageJson.scripts.build) {
+        const hasBuildScript = Boolean(packageJson.scripts?.build);
+        const usesTypeScript = fs_1.default.existsSync(tsconfigPath);
+        // === CASE 1: TypeScript project without build script ===
+        if (usesTypeScript && !hasBuildScript) {
             return {
                 name: this.name,
                 success: false,
                 warnings: [],
-                errors: ["No 'build' script found in package.json."],
-                scoreImpact: 10, // partial credit for valid project structure
+                errors: ["TypeScript project detected but no 'build' script found."],
+                scoreImpact: 10,
                 severity: "high"
             };
         }
+        // === CASE 2: Pure JS project without build is acceptable ===
+        if (!usesTypeScript && !hasBuildScript) {
+            return {
+                name: this.name,
+                success: true,
+                warnings: [
+                    "No build script found (acceptable for pure JavaScript projects)."
+                ],
+                errors: [],
+                scoreImpact: this.MAX_SCORE,
+                severity: "healthy"
+            };
+        }
+        // === CASE 3: Build script exists → execute it ===
         try {
             const { stdout } = await (0, execa_1.execa)("npm", ["run", "build"], {
                 stdio: "pipe"
             });
-            // Count warnings
             const warningCount = (stdout.match(/warning/gi) || []).length;
             let score = this.MAX_SCORE - warningCount * 2;
             if (score < 0)
