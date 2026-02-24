@@ -1,6 +1,6 @@
 {
     "name": "bridgepreflight",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Deployment Risk Intelligence CLI for Node.js projects. Detect build, runtime, and configuration risks before production.",
     "bin": {
         "bridgepreflight": "dist/cli.js"
