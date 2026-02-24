@@ -4,93 +4,120 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BuildAnalyzer = void 0;
-const execa_1 = require("execa");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const execa_1 = require("execa");
+const severity_1 = require("../utils/severity");
 class BuildAnalyzer {
     constructor() {
         this.name = "Build Check";
+        this.weight = 1.5;
+        this.supports = ["node"];
         this.MAX_SCORE = 50;
+        this.BUILD_TIMEOUT_MS = 60000; // 60s safety timeout
     }
     async run() {
         const projectRoot = process.cwd();
         const packageJsonPath = path_1.default.join(projectRoot, "package.json");
         const tsconfigPath = path_1.default.join(projectRoot, "tsconfig.json");
-        // === Must have package.json ===
+        let score = this.MAX_SCORE;
+        const findings = [];
+        // 1. Ensure package.json exists
         if (!fs_1.default.existsSync(packageJsonPath)) {
             return {
                 name: this.name,
                 success: false,
-                warnings: [],
-                errors: ["No package.json found in this directory."],
-                scoreImpact: 0,
-                severity: "critical"
-            };
-        }
-        const packageJson = JSON.parse(fs_1.default.readFileSync(packageJsonPath, "utf-8"));
-        const hasBuildScript = Boolean(packageJson.scripts?.build);
-        const usesTypeScript = fs_1.default.existsSync(tsconfigPath);
-        // === CASE 1: TypeScript project without build script ===
-        if (usesTypeScript && !hasBuildScript) {
-            return {
-                name: this.name,
-                success: false,
-                warnings: [],
-                errors: ["TypeScript project detected but no 'build' script found."],
-                scoreImpact: 10,
-                severity: "high"
-            };
-        }
-        // === CASE 2: Pure JS project without build is acceptable ===
-        if (!usesTypeScript && !hasBuildScript) {
-            return {
-                name: this.name,
-                success: true,
-                warnings: [
-                    "No build script found (acceptable for pure JavaScript projects)."
+                findings: [
+                    {
+                        type: "error",
+                        message: "package.json file is missing.",
+                        suggestion: "Ensure this is a valid Node.js project with a package.json file.",
+                    },
                 ],
-                errors: [],
-                scoreImpact: this.MAX_SCORE,
-                severity: "healthy"
+                scoreImpact: 0,
+                maxScore: this.MAX_SCORE,
+                severity: "critical",
             };
         }
-        // === CASE 3: Build script exists → execute it ===
-        try {
-            const { stdout } = await (0, execa_1.execa)("npm", ["run", "build"], {
-                stdio: "pipe"
+        const pkg = JSON.parse(fs_1.default.readFileSync(packageJsonPath, "utf-8"));
+        const hasBuildScript = Boolean(pkg.scripts?.build);
+        const usesTypeScript = fs_1.default.existsSync(tsconfigPath);
+        // 2. TypeScript but no build script
+        if (usesTypeScript && !hasBuildScript) {
+            score = 10;
+            findings.push({
+                type: "error",
+                message: "TypeScript project detected but no build script found in package.json.",
+                evidence: "tsconfig.json exists but scripts.build is undefined",
+                suggestion: 'Add a build script (e.g., `"build": "tsc"`) to compile TypeScript before deployment.',
             });
-            const warningCount = (stdout.match(/warning/gi) || []).length;
-            let score = this.MAX_SCORE - warningCount * 2;
-            if (score < 0)
-                score = 0;
-            let severity = "healthy";
-            if (warningCount > 5)
-                severity = "medium";
-            else if (warningCount > 0)
-                severity = "low";
-            return {
-                name: this.name,
-                success: true,
-                warnings: warningCount > 0
-                    ? [`${warningCount} build warnings detected.`]
-                    : [],
-                errors: [],
-                scoreImpact: score,
-                severity
-            };
-        }
-        catch (error) {
-            const errorOutput = error.stderr || error.message || "";
-            const errorLines = errorOutput.split("\n").filter(Boolean).length;
-            let score = this.MAX_SCORE - errorLines * 5;
-            if (score < 0)
-                score = 0;
             return {
                 name: this.name,
                 success: false,
-                warnings: [],
-                errors: [errorOutput],
+                findings,
                 scoreImpact: score,
+                maxScore: this.MAX_SCORE,
+                severity: (0, severity_1.calculateSeverity)(score, this.MAX_SCORE),
+            };
+        }
+        // 3. No build script at all
+        if (!hasBuildScript) {
+            findings.push({
+                type: "warning",
+                message: "No build script found in package.json.",
+                suggestion: "Consider defining a build step to ensure consistent production builds.",
+            });
+            return {
+                name: this.name,
+                success: true,
+                findings,
+                scoreImpact: score,
+                maxScore: this.MAX_SCORE,
+                severity: (0, severity_1.calculateSeverity)(score, this.MAX_SCORE),
+            };
+        }
+        // Execute build safely
+        try {
+            const { stdout, stderr } = await (0, execa_1.execa)("npm", ["run", "build"], {
+                cwd: projectRoot,
+                timeout: this.BUILD_TIMEOUT_MS,
+            });
+            const combineOutput = `${stdout}\n${stderr}`;
+            const warningCount = (combineOutput.match(/warning/gi) || []).length;
+            if (warningCount > 0) {
+                const deduction = Math.min(warningCount * 2, 20);
+                score -= deduction;
+                findings.push({
+                    type: "warning",
+                    message: `${warningCount} build warning(s) detected.`,
+                    suggestion: "Resolve build warnings to improve production stability and reduce hidden runtime issues."
+                });
+            }
+            if (score < 0)
+                score = 0;
+            return {
+                name: this.name,
+                success: score === this.MAX_SCORE,
+                findings,
+                scoreImpact: score,
+                maxScore: this.MAX_SCORE,
+                severity: (0, severity_1.calculateSeverity)(score, this.MAX_SCORE),
+            };
+        }
+        catch (err) {
+            score = 0;
+            findings.push({
+                type: "error",
+                message: "Build execution failed.",
+                evidence: err?.stderr || err?.message,
+                suggestion: "Fix build errors before deployment. Ensure the project builds successfully in a clean environment."
+            });
+            return {
+                name: this.name,
+                success: false,
+                findings,
+                scoreImpact: score,
+                maxScore: this.MAX_SCORE,
                 severity: "critical"
             };
         }

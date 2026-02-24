@@ -8,8 +8,14 @@ class ScanEngine {
     async runAll() {
         const results = [];
         for (const analyzer of this.analyzers) {
+            const start = Date.now();
             const result = await analyzer.run();
-            results.push(result);
+            const duration = Date.now() - start;
+            results.push({
+                analyzer,
+                result,
+                duration,
+            });
         }
         return results;
     }

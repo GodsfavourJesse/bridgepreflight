@@ -1,32 +1,48 @@
 {
     "name": "bridgepreflight",
     "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
+    "description": "Deployment Risk Intelligence CLI for Node.js projects. Detect build, runtime, and configuration risks before production.",
     "bin": {
-        "bridgepreflight": "./dist/cli.js"
+        "bridgepreflight": "dist/cli.js"
     },
+    "files": [
+        "dist"
+    ],
     "scripts": {
         "build": "tsc",
         "dev": "ts-node src/cli.ts",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "prepublishOnly": "npm run build"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "keywords": [
+        "devtools",
+        "risk",
+        "infrastructure",
+        "nodejs",
+        "preflight",
+        "runtime",
+        "ci",
+        "production",
+        "deployment",
+        "node",
+        "scanner"
+    ],
+    "author": "Godsfavour Jesse",
+    "license": "MIT",
     "type": "commonjs",
     "dependencies": {
-        "@types/glob": "^8.1.0",
         "chalk": "^5.6.2",
         "commander": "^14.0.3",
-        "dotenv": "^17.2.4",
         "execa": "^9.6.1",
         "glob": "^13.0.2",
-        "ora": "^9.3.0",
+        "ora": "^9.3.0"
+    },
+    "devDependencies": {
+        "@types/glob": "^8.1.0",
+        "@types/node": "^25.2.3",
         "ts-node": "^10.9.2",
         "typescript": "^5.9.3"
     },
-    "devDependencies": {
-        "@types/node": "^25.2.3"
+    "engines": {
+        "node": ">=18"
     }
 }
