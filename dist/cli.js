@@ -62,7 +62,7 @@ program
     .option("--json", "Output results as JSON (for CI pipelines)")
     .description("Run production safety checks")
     .action(async (options) => {
-    console.log(chalk_1.default.blue("\nWelcome to BridgePreflight — AI-native infrastructure readiness scanner\n"));
+    console.log(chalk_1.default.blue("\nWelcome to BridgePreflight — The Deployment Risk Intelligence Platform \n"));
     const ciMode = (0, ci_1.isCI)();
     if (!ciMode) {
         const accessGranted = await (0, projectUtils_1.askProjectAccess)();

@@ -32,7 +32,7 @@ program
 
         console.log(
             chalk.blue(
-                "\nWelcome to BridgePreflight — AI-native infrastructure readiness scanner\n"
+                "\nWelcome to BridgePreflight — The Deployment Risk Intelligence Platform \n"
             )
         );
 
