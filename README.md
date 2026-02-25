@@ -28,6 +28,7 @@ BridgePreflight runs locally or in CI to prevent high-risk deployments before th
 
 <!------------------------------  ------------------------------------>
 The Problem
+
 Modern teams ship fast.
 
 But deployments often fail because:
