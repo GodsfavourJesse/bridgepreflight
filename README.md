@@ -86,13 +86,13 @@ Current analyzers include:
 Installation
 
 Global Installation (Recommended)
-    • npm install -g bridgepreflight
+    npm install -g bridgepreflight
 
 Run:
-    • bridgepreflight scan
+    bridgepreflight scan
 
 Or without global install:
-    • npx bridgepreflight scan
+    npx bridgepreflight scan
 <!------------------------------  ------------------------------------>
 
 
@@ -157,27 +157,30 @@ Upcoming native integrations:
 
 <!------------------------------  ------------------------------------>
 Roadmap
-BridgePreflight is evolving into a full Deployment Risk Intelligence Platform.
+BridgePreflight is evolving into a comprehensive Deployment Risk Intelligence Platform.
 
-Phase 1 (Current)
-    • Local CLI scanning
-    • Weighted risk scoring
-    • Deterministic analyzer engine
+Phase 1 - Deterministic CLI (Current)
+    • Local development risk scanning
+    • Weighted analyzer scoring
+    • JSON output for CI integration
+    • Structured severity classification
 
-Phase 2
-    • Configurable scoring weights
-    • Plugin-based analyzer architecture
-    • CI enforcement modes (--strict, --ci)
+Phase 2 - Policy & Enforcement
+    • Configurable scoring thresholds
+    • Strict CI mode (--strict, --ci)
+    • COnfigurable analyzer toggling
+    • Exit-code enforcement policies
 
-Phase 3
-    • Historical risk tracking
-    • GitHub integration
-    • PR blocking with threshold enforcement
+Phase 3 - Ecosystem Integration
+    • Native GitHub Action
+    • Pull request risk annotations
+    • Historical score comparison
+    • Team-level threshold configuration
 
-Phase 4
-    • Cloud dashboard
-    • Team-level risk insights
-    • Policy enforcement
+Phase 4 - Platform Expansion
+    • Risk history tracking
+    • Deployment trend analysis
+    • Team dashboards
     • Enterprise compliance modules
 <!------------------------------  ------------------------------------>
 
